@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>App Store - Stable Direct Admin</title>
+    <title>App Store - Stable GoFile Admin</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome for Icons -->
@@ -15,9 +15,9 @@
     <nav class="bg-gray-800 border-b border-gray-700 px-6 py-4">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <h1 class="text-xl font-bold text-indigo-400 flex items-center gap-2">
-                <i class="fa-solid fa-cloud-arrow-up"></i> 1-Click Direct Publisher
+                <i class="fa-solid fa-cloud-arrow-up"></i> Stable Publisher Console
             </h1>
-            <span class="text-sm bg-green-900 text-green-300 px-3 py-1 rounded-full border border-green-700">Proxy Bypass Enabled</span>
+            <span class="text-sm bg-green-900 text-green-300 px-3 py-1 rounded-full border border-green-700">GoFile Cloud Connected</span>
         </div>
     </nav>
 
@@ -74,7 +74,7 @@
                 </div>
 
                 <button type="submit" id="submitBtn" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2 px-4 rounded text-sm font-semibold transition-colors flex justify-center items-center gap-2">
-                    <i class="fa-solid fa-cloud-arrow-up"></i> Direct Upload & Publish
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Upload and Publish
                 </button>
             </form>
         </div>
@@ -132,13 +132,23 @@
         const appTableBody = document.getElementById('appTableBody');
         const noAppsMsg = document.getElementById('noAppsMsg');
 
-        // CORS-Proxy integrated upload to bypass ISP and CORS block (Stable and Free)
-        function uploadToCatbox(file, onProgress) {
+        // Step 1: Get stable GoFile Server
+        async function getGoFileServer() {
+            const response = await fetch('https://api.gofile.io/servers');
+            const result = await response.json();
+            if (result.status === 'ok') {
+                return result.data.servers[0].name;
+            } else {
+                throw new Error('Cloud Server allocation failed.');
+            }
+        }
+
+        // Step 2: Upload File to GoFile
+        function uploadToGoFile(server, file, onProgress) {
             return new Promise((resolve, reject) => {
                 const xhr = new XMLHttpRequest();
                 const formData = new FormData();
-                formData.append('reqtype', 'fileupload');
-                formData.append('fileToUpload', file);
+                formData.append('file', file);
 
                 xhr.upload.addEventListener('progress', (e) => {
                     if (e.lengthComputable) {
@@ -149,21 +159,23 @@
 
                 xhr.addEventListener('load', () => {
                     if (xhr.status >= 200 && xhr.status < 300) {
-                        const responseUrl = xhr.responseText.trim();
-                        if (responseUrl.startsWith('http')) {
-                            resolve(responseUrl);
-                        } else {
-                            reject(new Error('Invalid response from proxy: ' + responseUrl));
+                        try {
+                            const res = JSON.parse(xhr.responseText);
+                            if (res.status === 'ok') {
+                                resolve(res.data.downloadPage); // Returns secure download link
+                            } else {
+                                reject(new Error('GoFile upload internal rejection'));
+                            }
+                        } catch (err) {
+                            reject(err);
                         }
                     } else {
-                        reject(new Error('Proxy server error status: ' + xhr.status));
+                        reject(new Error('Server responded with status: ' + xhr.status));
                     }
                 });
 
-                xhr.addEventListener('error', () => reject(new Error('Proxy network error. Check your connection.')));
-                
-                // Using corsproxy.io to route the request around local ISP blocks safely
-                xhr.open('POST', 'https://corsproxy.io/?url=https://catbox.moe/user/api.php');
+                xhr.addEventListener('error', () => reject(new Error('Network error. Check connection.')));
+                xhr.open('POST', `https://${server}.gofile.io/contents/uploadfile`);
                 xhr.send(formData);
             });
         }
@@ -182,24 +194,27 @@
             progressContainer.classList.remove('hidden');
 
             try {
-                // 1. Upload Icon (20% of progress bar)
-                progressStatus.textContent = 'Uploading Icon image (Proxy routing)...';
-                const iconUrl = await uploadToCatbox(iconFile, (percent) => {
+                progressStatus.textContent = 'Allocating secure cloud server...';
+                const server = await getGoFileServer();
+
+                // 1. Upload Icon (20% of progress)
+                progressStatus.textContent = 'Uploading Icon image...';
+                const iconUrl = await uploadToGoFile(server, iconFile, (percent) => {
                     const currentProgress = percent * 0.2;
                     progressBar.style.width = `${currentProgress}%`;
                     progressPercent.textContent = `${Math.round(currentProgress)}%`;
                 });
 
-                // 2. Upload APK (80% of progress bar)
-                progressStatus.textContent = 'Uploading APK file (Proxy routing - Do not close tab)...';
-                const apkUrl = await uploadToCatbox(apkFile, (percent) => {
+                // 2. Upload APK (80% of progress)
+                progressStatus.textContent = 'Uploading APK file (Keep tab active)...';
+                const apkUrl = await uploadToGoFile(server, apkFile, (percent) => {
                     const currentProgress = 20 + (percent * 0.8);
                     progressBar.style.width = `${currentProgress}%`;
                     progressPercent.textContent = `${Math.round(currentProgress)}%`;
                 });
 
-                // 3. Save directly to Firebase Database
-                progressStatus.textContent = 'Writing to live database...';
+                // 3. Save details to Database
+                progressStatus.textContent = 'Configuring Live Database...';
                 await db.collection('apps').add({
                     name: appName,
                     category: appCategory,
@@ -209,7 +224,7 @@
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
-                alert('Congratulations! App successfully published with unblocked direct link.');
+                alert('Congratulations! App uploaded successfully.');
                 uploadForm.reset();
             } catch (error) {
                 console.error(error);
