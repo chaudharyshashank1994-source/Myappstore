@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>App Store - Direct Download Admin</title>
+    <title>App Store - Stable Direct Admin</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome for Icons -->
@@ -17,7 +17,7 @@
             <h1 class="text-xl font-bold text-indigo-400 flex items-center gap-2">
                 <i class="fa-solid fa-cloud-arrow-up"></i> 1-Click Direct Publisher
             </h1>
-            <span class="text-sm bg-green-900 text-green-300 px-3 py-1 rounded-full border border-green-700">Catbox API Integrated</span>
+            <span class="text-sm bg-green-900 text-green-300 px-3 py-1 rounded-full border border-green-700">Proxy Bypass Enabled</span>
         </div>
     </nav>
 
@@ -132,7 +132,7 @@
         const appTableBody = document.getElementById('appTableBody');
         const noAppsMsg = document.getElementById('noAppsMsg');
 
-        // Direct Upload using Catbox.moe API (Provides Direct Raw File Links)
+        // CORS-Proxy integrated upload to bypass ISP and CORS block (Stable and Free)
         function uploadToCatbox(file, onProgress) {
             return new Promise((resolve, reject) => {
                 const xhr = new XMLHttpRequest();
@@ -151,19 +151,19 @@
                     if (xhr.status >= 200 && xhr.status < 300) {
                         const responseUrl = xhr.responseText.trim();
                         if (responseUrl.startsWith('http')) {
-                            resolve(responseUrl); // Catbox returns direct link (e.g. https://files.catbox.moe/abc.apk)
+                            resolve(responseUrl);
                         } else {
-                            reject(new Error('Invalid response from server: ' + responseUrl));
+                            reject(new Error('Invalid response from proxy: ' + responseUrl));
                         }
                     } else {
-                        reject(new Error('Server responded with status: ' + xhr.status));
+                        reject(new Error('Proxy server error status: ' + xhr.status));
                     }
                 });
 
-                xhr.addEventListener('error', () => reject(new Error('Network error. Ensure this page is hosted online.')));
+                xhr.addEventListener('error', () => reject(new Error('Proxy network error. Check your connection.')));
                 
-                // Catbox CORS-friendly upload endpoint
-                xhr.open('POST', 'https://catbox.moe/user/api.php');
+                // Using corsproxy.io to route the request around local ISP blocks safely
+                xhr.open('POST', 'https://corsproxy.io/?url=https://catbox.moe/user/api.php');
                 xhr.send(formData);
             });
         }
@@ -183,7 +183,7 @@
 
             try {
                 // 1. Upload Icon (20% of progress bar)
-                progressStatus.textContent = 'Uploading Icon image...';
+                progressStatus.textContent = 'Uploading Icon image (Proxy routing)...';
                 const iconUrl = await uploadToCatbox(iconFile, (percent) => {
                     const currentProgress = percent * 0.2;
                     progressBar.style.width = `${currentProgress}%`;
@@ -191,7 +191,7 @@
                 });
 
                 // 2. Upload APK (80% of progress bar)
-                progressStatus.textContent = 'Uploading APK file (Do not close tab)...';
+                progressStatus.textContent = 'Uploading APK file (Proxy routing - Do not close tab)...';
                 const apkUrl = await uploadToCatbox(apkFile, (percent) => {
                     const currentProgress = 20 + (percent * 0.8);
                     progressBar.style.width = `${currentProgress}%`;
@@ -209,11 +209,11 @@
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
-                alert('Congratulations! App successfully published on Store with Direct Download link.');
+                alert('Congratulations! App successfully published with unblocked direct link.');
                 uploadForm.reset();
             } catch (error) {
                 console.error(error);
-                alert('Upload Failed: ' + error.message + '\n\nTip: Make sure you host this admin.html file online on a free host like tiny.host to bypass browser security.');
+                alert('Upload Failed: ' + error.message);
             } finally {
                 submitBtn.disabled = false;
                 progressContainer.classList.add('hidden');
