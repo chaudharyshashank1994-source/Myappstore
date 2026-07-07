@@ -17,7 +17,7 @@
             <h1 class="text-xl font-bold text-indigo-400 flex items-center gap-2">
                 <i class="fa-solid fa-cloud-arrow-up"></i> True Direct Publisher
             </h1>
-            <span class="text-sm bg-green-900 text-green-300 px-3 py-1 rounded-full border border-green-700">Popup Bypass Active</span>
+            <span class="text-sm bg-green-900 text-green-300 px-3 py-1 rounded-full border border-green-700">All Warnings Bypassed</span>
         </div>
     </nav>
 
@@ -117,13 +117,14 @@
         const appTableBody = document.getElementById('appTableBody');
         const noAppsMsg = document.getElementById('noAppsMsg');
 
-        // Advanced extraction that formats for drive.usercontent.google.com CDN
+        // Advanced extraction that bypasses both native app popup AND virus scan warning screen
         function convertToDirectDownloadLink(gDriveUrl) {
             const regExp = /(?:https?:\/\/)?(?:drive\.google\.com)\/(?:file\/d\/|open\?id=)([a-zA-Z0-9-_]+)/;
             const matches = gDriveUrl.match(regExp);
             if (matches && matches[1]) {
-                // Bypasses the Native Google Drive App interception entirely
-                return `https://drive.usercontent.google.com/download?id=${matches[1]}&export=download`;
+                // drive.usercontent.google.com bypasses native app redirection
+                // confirm=t bypasses the "virus scan warning" screen
+                return `https://drive.usercontent.google.com/download?id=${matches[1]}&export=download&confirm=t`;
             }
             return gDriveUrl; 
         }
@@ -142,7 +143,7 @@
             submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Processing Links...`;
 
             try {
-                // Generate uninterceptable direct download links
+                // Generate warning-bypassed direct download links
                 const iconDirectUrl = convertToDirectDownloadLink(rawIconUrl);
                 const apkDirectUrl = convertToDirectDownloadLink(rawApkUrl);
 
@@ -155,7 +156,7 @@
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
-                alert('Successfully Published! Bypass links created.');
+                alert('Successfully Published with Bypass rules!');
                 uploadForm.reset();
             } catch (error) {
                 console.error(error);
