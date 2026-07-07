@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App Store - Direct Download Admin</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen font-sans">
+
+    <!-- Navigation -->
+    <nav class="bg-gray-800 border-b border-gray-700 px-6 py-4">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold text-indigo-400 flex items-center gap-2">
+                <i class="fa-solid fa-cloud-arrow-up"></i> 1-Click Direct Publisher
+            </h1>
+            <span class="text-sm bg-green-900 text-green-300 px-3 py-1 rounded-full border border-green-700">Catbox API Integrated</span>
+        </div>
+    </nav>
+
+    <!-- Main Grid -->
+    <main class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- App Upload Form -->
+        <div class="lg:col-span-1 bg-gray-800 rounded-xl p-6 border border-gray-700 shadow-xl h-fit">
+            <h2 class="text-lg font-semibold mb-4 text-white flex items-center gap-2">
+                <i class="fa-solid fa-circle-plus text-indigo-400"></i> Publish New App
+            </h2>
+            
+            <form id="uploadForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1 text-gray-300">App Name</label>
+                    <input type="text" id="appName" required placeholder="e.g. Targetzone Pro" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white focus:outline-none focus:border-indigo-500 text-sm">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-1 text-gray-300">Category</label>
+                    <select id="appCategory" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white focus:outline-none focus:border-indigo-500 text-sm">
+                        <option value="Tools">Tools</option>
+                        <option value="Games">Games</option>
+                        <option value="Social">Social</option>
+                        <option value="Music">Music/Video</option>
+                        <option value="Productivity">Productivity</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-1 text-gray-300">Description</label>
+                    <textarea id="appDesc" rows="3" required placeholder="App features..." class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white focus:outline-none focus:border-indigo-500 text-sm"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-1 text-gray-300">App Icon (Image)</label>
+                    <input type="file" id="appIcon" accept="image/*" required class="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-sm file:mr-4 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-1 text-gray-300">APK File (.apk)</label>
+                    <input type="file" id="appApk" accept=".apk" required class="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-sm file:mr-4 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500">
+                </div>
+
+                <!-- Progress Bar -->
+                <div id="progressContainer" class="hidden space-y-2">
+                    <div class="flex justify-between text-xs text-gray-400">
+                        <span id="progressStatus">Uploading file...</span>
+                        <span id="progressPercent">0%</span>
+                    </div>
+                    <div class="w-full bg-gray-700 rounded-full h-2">
+                        <div id="progressBar" class="bg-indigo-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <button type="submit" id="submitBtn" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2 px-4 rounded text-sm font-semibold transition-colors flex justify-center items-center gap-2">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Direct Upload & Publish
+                </button>
+            </form>
+        </div>
+
+        <!-- Manage Apps Section -->
+        <div class="lg:col-span-2 bg-gray-800 rounded-xl p-6 border border-gray-700 shadow-xl">
+            <h2 class="text-lg font-semibold mb-4 text-white flex items-center gap-2">
+                <i class="fa-solid fa-list text-indigo-400"></i> Live Store Apps
+            </h2>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-gray-300">
+                    <thead class="text-xs uppercase bg-gray-700 text-gray-400 border-b border-gray-600">
+                        <tr>
+                            <th class="px-4 py-3">Icon</th>
+                            <th class="px-4 py-3">App Name</th>
+                            <th class="px-4 py-3">Category</th>
+                            <th class="px-4 py-3 text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="appTableBody" class="divide-y divide-gray-700">
+                        <!-- Database Rows -->
+                    </tbody>
+                </table>
+                <div id="noAppsMsg" class="text-center py-8 text-gray-500 hidden">No apps listed yet.</div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Firebase SDK Compat -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        // Your Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyDnlRTIAVnlkEqvdadepWl8KC55eTCSFMc",
+            authDomain: "my-apk-store-59991.firebaseapp.com",
+            projectId: "my-apk-store-59991",
+            storageBucket: "my-apk-store-59991.firebasestorage.app",
+            messagingSenderId: "997005361021",
+            appId: "1:997005361021:web:0d1c13bc50b472a9c95614",
+            measurementId: "G-2MD7JF2JVB"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        const uploadForm = document.getElementById('uploadForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const progressPercent = document.getElementById('progressPercent');
+        const progressStatus = document.getElementById('progressStatus');
+        const appTableBody = document.getElementById('appTableBody');
+        const noAppsMsg = document.getElementById('noAppsMsg');
+
+        // Direct Upload using Catbox.moe API (Provides Direct Raw File Links)
+        function uploadToCatbox(file, onProgress) {
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                const formData = new FormData();
+                formData.append('reqtype', 'fileupload');
+                formData.append('fileToUpload', file);
+
+                xhr.upload.addEventListener('progress', (e) => {
+                    if (e.lengthComputable) {
+                        const percent = (e.loaded / e.total) * 100;
+                        onProgress(percent);
+                    }
+                });
+
+                xhr.addEventListener('load', () => {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        const responseUrl = xhr.responseText.trim();
+                        if (responseUrl.startsWith('http')) {
+                            resolve(responseUrl); // Catbox returns direct link (e.g. https://files.catbox.moe/abc.apk)
+                        } else {
+                            reject(new Error('Invalid response from server: ' + responseUrl));
+                        }
+                    } else {
+                        reject(new Error('Server responded with status: ' + xhr.status));
+                    }
+                });
+
+                xhr.addEventListener('error', () => reject(new Error('Network error. Ensure this page is hosted online.')));
+                
+                // Catbox CORS-friendly upload endpoint
+                xhr.open('POST', 'https://catbox.moe/user/api.php');
+                xhr.send(formData);
+            });
+        }
+
+        // Form Submit
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const appName = document.getElementById('appName').value;
+            const appCategory = document.getElementById('appCategory').value;
+            const appDesc = document.getElementById('appDesc').value;
+            const iconFile = document.getElementById('appIcon').files[0];
+            const apkFile = document.getElementById('appApk').files[0];
+
+            submitBtn.disabled = true;
+            progressContainer.classList.remove('hidden');
+
+            try {
+                // 1. Upload Icon (20% of progress bar)
+                progressStatus.textContent = 'Uploading Icon image...';
+                const iconUrl = await uploadToCatbox(iconFile, (percent) => {
+                    const currentProgress = percent * 0.2;
+                    progressBar.style.width = `${currentProgress}%`;
+                    progressPercent.textContent = `${Math.round(currentProgress)}%`;
+                });
+
+                // 2. Upload APK (80% of progress bar)
+                progressStatus.textContent = 'Uploading APK file (Do not close tab)...';
+                const apkUrl = await uploadToCatbox(apkFile, (percent) => {
+                    const currentProgress = 20 + (percent * 0.8);
+                    progressBar.style.width = `${currentProgress}%`;
+                    progressPercent.textContent = `${Math.round(currentProgress)}%`;
+                });
+
+                // 3. Save directly to Firebase Database
+                progressStatus.textContent = 'Writing to live database...';
+                await db.collection('apps').add({
+                    name: appName,
+                    category: appCategory,
+                    description: appDesc,
+                    iconUrl: iconUrl,
+                    apkUrl: apkUrl,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                alert('Congratulations! App successfully published on Store with Direct Download link.');
+                uploadForm.reset();
+            } catch (error) {
+                console.error(error);
+                alert('Upload Failed: ' + error.message + '\n\nTip: Make sure you host this admin.html file online on a free host like tiny.host to bypass browser security.');
+            } finally {
+                submitBtn.disabled = false;
+                progressContainer.classList.add('hidden');
+                progressBar.style.width = '0%';
+                progressPercent.textContent = '0%';
+            }
+        });
+
+        // Live table sync
+        db.collection('apps').orderBy('timestamp', 'desc').onSnapshot((snapshot) => {
+            appTableBody.innerHTML = '';
+            if (snapshot.empty) {
+                noAppsMsg.classList.remove('hidden');
+                return;
+            }
+            noAppsMsg.classList.add('hidden');
+
+            snapshot.forEach((doc) => {
+                const app = doc.data();
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-700/50 transition-colors';
+                tr.innerHTML = `
+                    <td class="px-4 py-3">
+                        <img src="${app.iconUrl}" alt="" onerror="this.src='https://placehold.co/40x40/555/fff?text=App'" class="w-10 h-10 rounded-lg object-cover">
+                    </td>
+                    <td class="px-4 py-3 font-semibold text-white">${app.name}</td>
+                    <td class="px-4 py-3 text-xs text-gray-400">
+                        <span class="bg-gray-700 px-2 py-1 rounded">${app.category}</span>
+                    </td>
+                    <td class="px-4 py-3 text-right">
+                        <button onclick="deleteApp('${doc.id}')" class="text-red-400 hover:text-red-500 transition-colors text-sm">
+                            <i class="fa-solid fa-trash-can"></i> Delete
+                        </button>
+                    </td>
+                `;
+                appTableBody.appendChild(tr);
+            });
+        });
+
+        // Delete App function
+        async function deleteApp(id) {
+            if (confirm('Are you sure you want to delete this app?')) {
+                try {
+                    await db.collection('apps').doc(id).delete();
+                } catch (error) {
+                    alert('Error: ' + error.message);
+                }
+            }
+        }
+    </script>
+</body>
+</html>

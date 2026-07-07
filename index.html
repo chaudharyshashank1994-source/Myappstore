@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APK Market - Download Free Android Apps</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen font-sans">
+
+    <!-- Header / Navbar -->
+    <nav class="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-md border-b border-gray-800 px-4 py-3">
+        <div class="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
+            <a href="#" class="text-xl font-bold tracking-wider text-indigo-400 flex items-center gap-2">
+                <i class="fa-solid fa-mobile-screen-button"></i> AppMarket
+            </a>
+            
+            <!-- Search Bar -->
+            <div class="relative w-full sm:w-80">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
+                </span>
+                <input type="text" id="searchInput" placeholder="Search apps..." class="w-full bg-gray-800 border border-gray-700 rounded-full pl-9 pr-4 py-1.5 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+            </div>
+        </div>
+    </nav>
+
+    <!-- Categories Filters -->
+    <div class="bg-gray-900 border-b border-gray-800 px-4 py-3 overflow-x-auto whitespace-nowrap scrollbar-none">
+        <div class="max-w-6xl mx-auto flex gap-2" id="categoryFilters">
+            <button onclick="filterCategory('All')" class="category-btn bg-indigo-600 text-white px-4 py-1.5 rounded-full text-xs font-semibold transition-all">All</button>
+            <button onclick="filterCategory('Tools')" class="category-btn bg-gray-800 text-gray-300 px-4 py-1.5 rounded-full text-xs font-semibold hover:bg-gray-700 transition-all">Tools</button>
+            <button onclick="filterCategory('Games')" class="category-btn bg-gray-800 text-gray-300 px-4 py-1.5 rounded-full text-xs font-semibold hover:bg-gray-700 transition-all">Games</button>
+            <button onclick="filterCategory('Social')" class="category-btn bg-gray-800 text-gray-300 px-4 py-1.5 rounded-full text-xs font-semibold hover:bg-gray-700 transition-all">Social</button>
+            <button onclick="filterCategory('Music')" class="category-btn bg-gray-800 text-gray-300 px-4 py-1.5 rounded-full text-xs font-semibold hover:bg-gray-700 transition-all">Music/Video</button>
+            <button onclick="filterCategory('Productivity')" class="category-btn bg-gray-800 text-gray-300 px-4 py-1.5 rounded-full text-xs font-semibold hover:bg-gray-700 transition-all">Productivity</button>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <header class="max-w-6xl mx-auto px-4 py-8 text-center sm:text-left">
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-white">Direct APK Download Hub</h2>
+        <p class="text-gray-400 mt-1 text-sm sm:text-base">Safe, scanned, and direct mobile downloads.</p>
+    </header>
+
+    <!-- App Grid Section -->
+    <main class="max-w-6xl mx-auto px-4 pb-12">
+        <div id="loadingIndicator" class="text-center py-20">
+            <i class="fa-solid fa-circle-notch animate-spin text-4xl text-indigo-500"></i>
+            <p class="mt-2 text-gray-400 text-sm">Syncing with database...</p>
+        </div>
+
+        <div id="noAppsContainer" class="hidden text-center py-20">
+            <i class="fa-solid fa-box-open text-5xl text-gray-600 mb-2"></i>
+            <p class="text-gray-400 text-lg">No apps found matching criteria</p>
+        </div>
+
+        <div id="appGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 hidden">
+            <!-- App cards will dynamically insert here -->
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 border-t border-gray-800 py-6 text-center text-xs text-gray-500">
+        <p>&copy; 2026 AppMarket. All files stored securely on cloud services.</p>
+    </footer>
+
+    <!-- Firebase SDK Compat -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        // Pre-integrated configuration from your screenshot
+        const firebaseConfig = {
+            apiKey: "AIzaSyDnlRTIAVnlkEqvdadepWl8KC55eTCSFMc",
+            authDomain: "my-apk-store-59991.firebaseapp.com",
+            projectId: "my-apk-store-59991",
+            storageBucket: "my-apk-store-59991.firebasestorage.app",
+            messagingSenderId: "997005361021",
+            appId: "1:997005361021:web:0d1c13bc50b472a9c95614",
+            measurementId: "G-2MD7JF2JVB"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        let localAppsData = [];
+        let activeCategory = 'All';
+
+        const appGrid = document.getElementById('appGrid');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const noAppsContainer = document.getElementById('noAppsContainer');
+        const searchInput = document.getElementById('searchInput');
+
+        // Fetch Data from Firestore in Real-time
+        db.collection('apps').orderBy('timestamp', 'desc').onSnapshot((snapshot) => {
+            localAppsData = [];
+            snapshot.forEach((doc) => {
+                localAppsData.push({ id: doc.id, ...doc.data() });
+            });
+            
+            loadingIndicator.classList.add('hidden');
+            renderApps();
+        }, (error) => {
+            console.error("Firestore read error:", error);
+            loadingIndicator.innerHTML = '<p class="text-red-400">Database connection error. Check if Firestore rules are set to test mode.</p>';
+        });
+
+        // Search Input Event
+        searchInput.addEventListener('input', () => {
+            renderApps();
+        });
+
+        // Filter Functionality
+        function filterCategory(category) {
+            activeCategory = category;
+            
+            const buttons = document.querySelectorAll('#categoryFilters button');
+            buttons.forEach(btn => {
+                if (btn.textContent.trim().toLowerCase() === category.toLowerCase() || (category === 'All' && btn.textContent.trim() === 'All')) {
+                    btn.className = "category-btn bg-indigo-600 text-white px-4 py-1.5 rounded-full text-xs font-semibold transition-all";
+                } else {
+                    btn.className = "category-btn bg-gray-800 text-gray-300 px-4 py-1.5 rounded-full text-xs font-semibold hover:bg-gray-700 transition-all";
+                }
+            });
+
+            renderApps();
+        }
+
+        // Render Apps
+        function renderApps() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            
+            const filteredApps = localAppsData.filter(app => {
+                const matchesCategory = activeCategory === 'All' || app.category.toLowerCase() === activeCategory.toLowerCase();
+                const matchesSearch = app.name.toLowerCase().includes(searchTerm) || app.description.toLowerCase().includes(searchTerm);
+                return matchesCategory && matchesSearch;
+            });
+
+            if (filteredApps.length === 0) {
+                appGrid.classList.add('hidden');
+                noAppsContainer.classList.remove('hidden');
+                return;
+            }
+
+            noAppsContainer.classList.add('hidden');
+            appGrid.classList.remove('hidden');
+            appGrid.innerHTML = '';
+
+            filteredApps.forEach(app => {
+                const card = document.createElement('div');
+                card.className = "bg-gray-900 border border-gray-800 rounded-2xl p-5 hover:border-gray-700 hover:shadow-2xl hover:shadow-indigo-500/5 transition-all flex flex-col justify-between";
+                card.innerHTML = `
+                    <div>
+                        <!-- Icon & Details Header -->
+                        <div class="flex gap-4 items-start mb-4">
+                            <img src="${app.iconUrl}" alt="" onerror="this.src='https://placehold.co/60x60/555/fff?text=App'" class="w-16 h-16 rounded-2xl object-cover shadow-md border border-gray-800">
+                            <div class="flex-1 min-w-0">
+                                <h3 class="text-lg font-bold text-white truncate leading-snug">${app.name}</h3>
+                                <span class="inline-block text-xs font-semibold text-indigo-400 bg-indigo-500/10 px-2.5 py-0.5 rounded-full mt-1 border border-indigo-500/20">${app.category}</span>
+                            </div>
+                        </div>
+                        <!-- Description -->
+                        <p class="text-sm text-gray-400 line-clamp-3 mb-5">${app.description}</p>
+                    </div>
+                    
+                    <!-- Download Button -->
+                    <a href="${app.apkUrl}" target="_blank" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 px-4 rounded-xl text-sm font-semibold text-center flex items-center justify-center gap-2 transition-all shadow-lg shadow-indigo-600/10">
+                        <i class="fa-solid fa-circle-arrow-down"></i> Get APK File
+                    </a>
+                `;
+                appGrid.appendChild(card);
+            });
+        }
+    </script>
+</body>
+</html>
