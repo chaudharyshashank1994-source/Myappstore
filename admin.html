@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>App Store - Professional Admin Panel</title>
+    <title>App Store - True 1-Click Admin</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome for Icons -->
@@ -15,9 +15,9 @@
     <nav class="bg-gray-800 border-b border-gray-700 px-6 py-4">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <h1 class="text-xl font-bold text-indigo-400 flex items-center gap-2">
-                <i class="fa-solid fa-cloud-arrow-up"></i> 1-Click Direct Console
+                <i class="fa-solid fa-cloud-arrow-up"></i> True Direct Publisher
             </h1>
-            <span class="text-sm bg-green-900 text-green-300 px-3 py-1 rounded-full border border-green-700">Auto-Converter Active</span>
+            <span class="text-sm bg-green-900 text-green-300 px-3 py-1 rounded-full border border-green-700">Popup Bypass Active</span>
         </div>
     </nav>
 
@@ -27,7 +27,7 @@
         <!-- App Upload Form -->
         <div class="lg:col-span-1 bg-gray-800 rounded-xl p-6 border border-gray-700 shadow-xl h-fit">
             <h2 class="text-lg font-semibold mb-4 text-white flex items-center gap-2">
-                <i class="fa-solid fa-circle-plus text-indigo-400"></i> Add New App (1-Click)
+                <i class="fa-solid fa-circle-plus text-indigo-400"></i> Add New App
             </h2>
             
             <form id="uploadForm" class="space-y-4">
@@ -54,14 +54,12 @@
 
                 <div>
                     <label class="block text-sm font-medium mb-1 text-gray-300">App Icon Image URL</label>
-                    <input type="url" id="appIconUrl" required placeholder="Paste Google Drive image link or any direct image link" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white focus:outline-none focus:border-indigo-500 text-sm">
-                    <p class="text-[10px] text-gray-400 mt-1">Upload logo to Google Drive, share as public, and paste link here.</p>
+                    <input type="url" id="appIconUrl" required placeholder="Paste Google Drive image link" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white focus:outline-none focus:border-indigo-500 text-sm">
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium mb-1 text-gray-300">Google Drive APK Share Link</label>
                     <input type="url" id="appApkUrl" required placeholder="https://drive.google.com/file/d/..." class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white focus:outline-none focus:border-indigo-500 text-sm">
-                    <p class="text-[10px] text-gray-400 mt-1">Upload APK to Google Drive, set sharing to 'Anyone with link', and paste here.</p>
                 </div>
 
                 <button type="submit" id="submitBtn" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2 px-4 rounded text-sm font-semibold transition-colors flex justify-center items-center gap-2">
@@ -119,15 +117,15 @@
         const appTableBody = document.getElementById('appTableBody');
         const noAppsMsg = document.getElementById('noAppsMsg');
 
-        // Function to extract Google Drive file ID and convert to direct download URL
+        // Advanced extraction that formats for drive.usercontent.google.com CDN
         function convertToDirectDownloadLink(gDriveUrl) {
             const regExp = /(?:https?:\/\/)?(?:drive\.google\.com)\/(?:file\/d\/|open\?id=)([a-zA-Z0-9-_]+)/;
             const matches = gDriveUrl.match(regExp);
             if (matches && matches[1]) {
-                // Generates direct download api URL
-                return `https://docs.google.com/uc?export=download&id=${matches[1]}`;
+                // Bypasses the Native Google Drive App interception entirely
+                return `https://drive.usercontent.google.com/download?id=${matches[1]}&export=download`;
             }
-            return gDriveUrl; // Returns original if not a google drive link
+            return gDriveUrl; 
         }
 
         // Form Submit
@@ -141,14 +139,13 @@
             const rawApkUrl = document.getElementById('appApkUrl').value;
 
             submitBtn.disabled = true;
-            submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Converting Link...`;
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Processing Links...`;
 
             try {
-                // Auto-convert both image and APK links to direct download URLs
+                // Generate uninterceptable direct download links
                 const iconDirectUrl = convertToDirectDownloadLink(rawIconUrl);
                 const apkDirectUrl = convertToDirectDownloadLink(rawApkUrl);
 
-                // Save converted links to Firestore Database
                 await db.collection('apps').add({
                     name: appName,
                     category: appCategory,
@@ -158,7 +155,7 @@
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
-                alert('Successfully Published! App added to store with 1-Click download.');
+                alert('Successfully Published! Bypass links created.');
                 uploadForm.reset();
             } catch (error) {
                 console.error(error);
@@ -169,7 +166,7 @@
             }
         });
 
-        // Sync local list table in Real-time
+        // Sync table in Real-time
         db.collection('apps').orderBy('timestamp', 'desc').onSnapshot((snapshot) => {
             appTableBody.innerHTML = '';
             if (snapshot.empty) {
