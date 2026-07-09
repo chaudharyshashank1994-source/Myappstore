@@ -3,103 +3,183 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>App Store - Ultimate Admin Panel</title>
+    <title>App Store - Secured Admin Dashboard</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .login-blur {
+            backdrop-filter: blur(10px);
+        }
+    </style>
 </head>
-<body class="bg-gray-900 text-gray-100 min-h-screen font-sans">
+<body class="bg-gray-950 text-gray-100 min-h-screen font-sans">
 
-    <!-- Navigation -->
-    <nav class="bg-gray-800 border-b border-gray-700 px-6 py-4">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-bold text-indigo-400 flex items-center gap-2">
-                <i class="fa-solid fa-cloud-arrow-up"></i> Multi-Cloud direct Console
-            </h1>
-            <span class="text-sm bg-green-900 text-green-300 px-3 py-1 rounded-full border border-green-700">Dropbox & GDrive Active</span>
-        </div>
-    </nav>
-
-    <!-- Main Grid -->
-    <main class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        <!-- App Upload Form -->
-        <div class="lg:col-span-1 bg-gray-800 rounded-xl p-6 border border-gray-700 shadow-xl h-fit">
-            <h2 class="text-lg font-semibold mb-4 text-white flex items-center gap-2">
-                <i class="fa-solid fa-circle-plus text-indigo-400"></i> Add New App (Any Size)
-            </h2>
+    <!-- PASSWORD LOGIN OVERLAY -->
+    <div id="loginOverlay" class="fixed inset-0 z-50 bg-gray-950/90 login-blur flex items-center justify-center p-4">
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 w-full max-w-sm shadow-2xl text-center">
+            <div class="w-16 h-16 bg-indigo-600/10 text-indigo-400 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                <i class="fa-solid fa-lock"></i>
+            </div>
+            <h2 class="text-xl font-bold text-white mb-2">Admin Authentication</h2>
+            <p class="text-xs text-gray-400 mb-6">Enter password to access store console</p>
             
-            <form id="uploadForm" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium mb-1 text-gray-300">App Name</label>
-                    <input type="text" id="appName" required placeholder="e.g. Targetzone Pro" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white focus:outline-none focus:border-indigo-500 text-sm">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium mb-1 text-gray-300">Category</label>
-                    <select id="appCategory" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white focus:outline-none focus:border-indigo-500 text-sm">
-                        <option value="Tools">Tools</option>
-                        <option value="Games">Games</option>
-                        <option value="Social">Social</option>
-                        <option value="Music">Music/Video</option>
-                        <option value="Productivity">Productivity</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium mb-1 text-gray-300">Description</label>
-                    <textarea id="appDesc" rows="3" required placeholder="Describe app features..." class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white focus:outline-none focus:border-indigo-500 text-sm"></textarea>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium mb-1 text-gray-300">App Icon Image URL</label>
-                    <input type="url" id="appIconUrl" required placeholder="Paste Google Drive or Dropbox Image Link" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white focus:outline-none focus:border-indigo-500 text-sm">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium mb-1 text-gray-300">Dropbox or Google Drive APK Link</label>
-                    <input type="url" id="appApkUrl" required placeholder="Paste Dropbox or GDrive share link" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white focus:outline-none focus:border-indigo-500 text-sm">
-                    <p class="text-[10px] text-gray-400 mt-1">Dropbox is highly recommended for APKs larger than 25MB.</p>
-                </div>
-
-                <button type="submit" id="submitBtn" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2 px-4 rounded text-sm font-semibold transition-colors flex justify-center items-center gap-2">
-                    <i class="fa-solid fa-share-from-square"></i> Add App to Store
+            <form id="loginForm" class="space-y-4">
+                <input type="password" id="adminPassword" required placeholder="Enter password..." class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-center text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 rounded-xl transition-all text-sm">
+                    Unlock Dashboard
                 </button>
             </form>
+            <p id="loginError" class="text-red-400 text-xs mt-3 hidden">Incorrect password. Please try again.</p>
         </div>
+    </div>
 
-        <!-- Manage Apps Section -->
-        <div class="lg:col-span-2 bg-gray-800 rounded-xl p-6 border border-gray-700 shadow-xl">
-            <h2 class="text-lg font-semibold mb-4 text-white flex items-center gap-2">
-                <i class="fa-solid fa-list text-indigo-400"></i> Live Store Apps
-            </h2>
-
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm text-gray-300">
-                    <thead class="text-xs uppercase bg-gray-700 text-gray-400 border-b border-gray-600">
-                        <tr>
-                            <th class="px-4 py-3">Icon</th>
-                            <th class="px-4 py-3">App Name</th>
-                            <th class="px-4 py-3">Category</th>
-                            <th class="px-4 py-3 text-right">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="appTableBody" class="divide-y divide-gray-700">
-                        <!-- Database Rows -->
-                    </tbody>
-                </table>
-                <div id="noAppsMsg" class="text-center py-8 text-gray-500 hidden">No apps listed yet.</div>
+    <!-- MAIN DASHBOARD CONTENT (HIDDEN UNTIL UNLOCKED) -->
+    <div id="dashboardContent" class="hidden">
+        <!-- Navigation -->
+        <nav class="bg-gray-900 border-b border-gray-800 px-6 py-4 sticky top-0 z-10">
+            <div class="max-w-7xl mx-auto flex justify-between items-center">
+                <h1 class="text-xl font-extrabold tracking-tight text-white flex items-center gap-2">
+                    <span class="bg-indigo-600 text-white p-1.5 rounded-lg text-sm"><i class="fa-solid fa-screwdriver-wrench"></i></span>
+                    Store Console
+                </h1>
+                <div class="flex items-center gap-3">
+                    <span class="text-xs bg-indigo-900/40 text-indigo-400 px-3 py-1.5 rounded-full border border-indigo-800 font-medium">Secured Connection</span>
+                    <button onclick="logoutAdmin()" class="text-xs text-red-400 hover:text-red-300 font-medium transition-colors">
+                        <i class="fa-solid fa-power-off"></i> Logout
+                    </button>
+                </div>
             </div>
-        </div>
-    </main>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- App Upload Form -->
+            <div class="lg:col-span-1 bg-gray-900 rounded-2xl p-6 border border-gray-800 shadow-xl h-fit">
+                <h2 class="text-lg font-bold mb-4 text-white flex items-center gap-2">
+                    <i class="fa-solid fa-circle-plus text-indigo-400"></i> Add New App
+                </h2>
+                
+                <form id="uploadForm" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">App Name</label>
+                        <input type="text" id="appName" required placeholder="e.g. Targetzone Pro" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 text-sm">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">Category</label>
+                        <select id="appCategory" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 text-sm">
+                            <option value="Tools">Tools</option>
+                            <option value="Games">Games</option>
+                            <option value="Social">Social</option>
+                            <option value="Music">Music/Video</option>
+                            <option value="Productivity">Productivity</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">Description</label>
+                        <textarea id="appDesc" rows="3" required placeholder="Describe specifications and features..." class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 text-sm"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">App Icon (Select from Photos)</label>
+                        <input type="file" id="appIconFile" accept="image/*" required class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-sm file:mr-4 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">Google Drive APK Share Link</label>
+                        <input type="url" id="appApkUrl" required placeholder="Paste Google Drive file link" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 text-sm">
+                        <p class="text-[10px] text-gray-500 mt-1">Set file sharing to 'Anyone with link' on Google Drive.</p>
+                    </div>
+
+                    <!-- Progress Status -->
+                    <div id="progressContainer" class="hidden space-y-2">
+                        <div class="flex justify-between text-xs text-gray-400">
+                            <span id="progressStatus">Uploading...</span>
+                            <span id="progressPercent">0%</span>
+                        </div>
+                        <div class="w-full bg-gray-800 rounded-full h-2">
+                            <div id="progressBar" class="bg-indigo-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 px-4 rounded-xl text-sm font-bold transition-all flex justify-center items-center gap-2">
+                        <i class="fa-solid fa-share-from-square"></i> Add App to Store
+                    </button>
+                </form>
+            </div>
+
+            <!-- Manage Apps Section -->
+            <div class="lg:col-span-2 bg-gray-900 rounded-2xl p-6 border border-gray-800 shadow-xl">
+                <h2 class="text-lg font-bold mb-4 text-white flex items-center gap-2">
+                    <i class="fa-solid fa-list text-indigo-400"></i> Manage Store Apps
+                </h2>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-gray-300">
+                        <thead class="text-xs uppercase bg-gray-800 text-gray-400 border-b border-gray-700">
+                            <tr>
+                                <th class="px-4 py-3">Icon</th>
+                                <th class="px-4 py-3">App Name</th>
+                                <th class="px-4 py-3">Category</th>
+                                <th class="px-4 py-3 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="appTableBody" class="divide-y divide-gray-800">
+                            <!-- Database Rows -->
+                        </tbody>
+                    </table>
+                    <div id="noAppsMsg" class="text-center py-8 text-gray-500 hidden">No apps listed yet.</div>
+                </div>
+            </div>
+        </main>
+    </div>
 
     <!-- Firebase SDK Compat -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
     <script>
-        // Your Firebase config
+        // Password Protection Settings (Set your custom password here)
+        const ADMIN_PASSWORD = "admin75"; 
+
+        const loginOverlay = document.getElementById('loginOverlay');
+        const loginForm = document.getElementById('loginForm');
+        const dashboardContent = document.getElementById('dashboardContent');
+        const loginError = document.getElementById('loginError');
+
+        // Check if already authenticated in this session
+        if (sessionStorage.getItem('isAdminAuthenticated') === 'true') {
+            unlockDashboard();
+        }
+
+        // Login Submit
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const enteredPass = document.getElementById('adminPassword').value;
+            if (enteredPass === ADMIN_PASSWORD) {
+                sessionStorage.setItem('isAdminAuthenticated', 'true');
+                unlockDashboard();
+            } else {
+                loginError.classList.remove('hidden');
+                document.getElementById('adminPassword').value = '';
+            }
+        });
+
+        function unlockDashboard() {
+            loginOverlay.classList.add('hidden');
+            dashboardContent.classList.remove('hidden');
+        }
+
+        function logoutAdmin() {
+            sessionStorage.removeItem('isAdminAuthenticated');
+            location.reload();
+        }
+
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDnlRTIAVnlkEqvdadepWl8KC55eTCSFMc",
             authDomain: "my-apk-store-59991.firebaseapp.com",
@@ -115,44 +195,67 @@
 
         const uploadForm = document.getElementById('uploadForm');
         const submitBtn = document.getElementById('submitBtn');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const progressPercent = document.getElementById('progressPercent');
+        const progressStatus = document.getElementById('progressStatus');
         const appTableBody = document.getElementById('appTableBody');
         const noAppsMsg = document.getElementById('noAppsMsg');
 
-        // Combined Direct Download Link Converter (Supports Dropbox and GDrive)
-        function convertToDirectDownloadLink(url) {
-            // 1. Handle Dropbox Links (Replaces dl=0 with dl=1 to trigger instant direct download)
-            if (url.includes('dropbox.com')) {
-                return url.replace('dl=0', 'dl=1');
+        // Upload local icon image to Telegraph Cloud (Free CDN with no blocks)
+        async function uploadIconToCloud(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            const response = await fetch('https://telegra.ph/upload', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            if (data && data[0] && data[0].path) {
+                return 'https://telegra.ph' + data[0].path;
+            } else {
+                throw new Error('Telegraph upload error');
             }
+        }
 
-            // 2. Handle Google Drive Links
+        // Converts Google Drive link to warning-free direct stream link
+        function convertToDirectDownloadLink(gDriveUrl) {
             const regExp = /(?:https?:\/\/)?(?:drive\.google\.com)\/(?:file\/d\/|open\?id=)([a-zA-Z0-9-_]+)/;
-            const matches = url.match(regExp);
+            const matches = gDriveUrl.match(regExp);
             if (matches && matches[1]) {
                 return `https://drive.usercontent.google.com/download?id=${matches[1]}&export=download&confirm=t`;
             }
-
-            return url; 
+            return gDriveUrl; 
         }
 
-        // Form Submit
+        // Form Submit Upload Flow
         uploadForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
             const appName = document.getElementById('appName').value;
             const appCategory = document.getElementById('appCategory').value;
             const appDesc = document.getElementById('appDesc').value;
-            const rawIconUrl = document.getElementById('appIconUrl').value;
+            const iconFile = document.getElementById('appIconFile').files[0];
             const rawApkUrl = document.getElementById('appApkUrl').value;
 
             submitBtn.disabled = true;
-            submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Processing Links...`;
+            progressContainer.classList.remove('hidden');
+            progressStatus.textContent = 'Uploading App Icon...';
+            progressBar.style.width = '30%';
+            progressPercent.textContent = '30%';
 
             try {
-                // Generate warning-bypassed direct download links
-                const iconDirectUrl = convertToDirectDownloadLink(rawIconUrl);
+                // 1. Upload Icon directly from device selection
+                const iconDirectUrl = await uploadIconToCloud(iconFile);
+                progressBar.style.width = '70%';
+                progressPercent.textContent = '70%';
+
+                // 2. Parse Google Drive bypass Link
+                progressStatus.textContent = 'Bypassing download limits...';
                 const apkDirectUrl = convertToDirectDownloadLink(rawApkUrl);
 
+                // 3. Write to Firestore Database
+                progressStatus.textContent = 'Finalizing app listing...';
                 await db.collection('apps').add({
                     name: appName,
                     category: appCategory,
@@ -162,18 +265,20 @@
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
-                alert('Successfully Published with bypass rules!');
+                alert('Success! App listed securely on Store.');
                 uploadForm.reset();
             } catch (error) {
                 console.error(error);
-                alert('Database Error: ' + error.message);
+                alert('Upload Failed: Make sure you selected a valid image file.');
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = `<i class="fa-solid fa-share-from-square"></i> Add App to Store`;
+                progressContainer.classList.add('hidden');
+                progressBar.style.width = '0%';
+                progressPercent.textContent = '0%';
             }
         });
 
-        // Sync table in Real-time
+        // Sync local list in Real-time
         db.collection('apps').orderBy('timestamp', 'desc').onSnapshot((snapshot) => {
             appTableBody.innerHTML = '';
             if (snapshot.empty) {
@@ -185,14 +290,14 @@
             snapshot.forEach((doc) => {
                 const app = doc.data();
                 const tr = document.createElement('tr');
-                tr.className = 'hover:bg-gray-700/50 transition-colors';
+                tr.className = 'hover:bg-gray-800/50 transition-colors';
                 tr.innerHTML = `
                     <td class="px-4 py-3">
-                        <img src="${app.iconUrl}" alt="" onerror="this.src='https://placehold.co/40x40/555/fff?text=App'" class="w-10 h-10 rounded-lg object-cover">
+                        <img src="${app.iconUrl}" alt="" onerror="this.src='https://placehold.co/40x40/555/fff?text=App'" class="w-10 h-10 rounded-xl object-cover">
                     </td>
                     <td class="px-4 py-3 font-semibold text-white">${app.name}</td>
                     <td class="px-4 py-3 text-xs text-gray-400">
-                        <span class="bg-gray-700 px-2 py-1 rounded">${app.category}</span>
+                        <span class="bg-gray-800 px-2 py-1 rounded">${app.category}</span>
                     </td>
                     <td class="px-4 py-3 text-right">
                         <button onclick="deleteApp('${doc.id}')" class="text-red-400 hover:text-red-500 transition-colors text-sm">
@@ -206,7 +311,7 @@
 
         // Delete App function
         async function deleteApp(id) {
-            if (confirm('Delete this app?')) {
+            if (confirm('Are you sure you want to delete this app?')) {
                 try {
                     await db.collection('apps').doc(id).delete();
                 } catch (error) {
